@@ -1,4 +1,4 @@
-import { ComponentMapper, ComponentSetBuilder, EntitySystem } from '@cbartel_ci/tsecs';
+import { ComponentMapper, ComponentSetBuilder, EntitySystem, Mapper } from '@cbartel_ci/tsecs';
 import { Container } from 'pixi.js';
 // @ts-ignore
 import Gradient from 'javascript-color-gradient';
@@ -7,10 +7,13 @@ import { ParticleComponent } from './particle-component';
 import { MassComponent } from './mass-component';
 
 export class ParticleSystem extends EntitySystem {
+  @Mapper(ParticleComponent)
   private particleComponentMapper!: ComponentMapper<ParticleComponent>;
 
+  @Mapper(TransformComponent)
   private transformComponentmapper!: ComponentMapper<TransformComponent>;
 
+  @Mapper(MassComponent)
   private massComponentMapper!: ComponentMapper<MassComponent>;
 
   private gradient!: Gradient;
@@ -24,10 +27,6 @@ export class ParticleSystem extends EntitySystem {
   }
 
   onInit(): void {
-    this.particleComponentMapper = this.getWorld().getComponentMapper(ParticleComponent);
-    this.transformComponentmapper = this.getWorld().getComponentMapper(TransformComponent);
-    this.massComponentMapper = this.getWorld().getComponentMapper(MassComponent);
-
     this.gradient = new Gradient();
     const color1 = '#FFFFFF';
     const color2 = '#e9446a';

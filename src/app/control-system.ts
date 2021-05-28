@@ -1,4 +1,4 @@
-import { ComponentMapper, System } from '@cbartel_ci/tsecs';
+import { ComponentMapper, Mapper, System } from '@cbartel_ci/tsecs';
 import { ParticleComponent } from './particle-component';
 import { TransformComponent } from './transform-component';
 import { MassComponent } from './mass-component';
@@ -11,20 +11,19 @@ export class ControlSystem extends System {
 
   private keyboardEvents: KeyboardEvent[] = [];
 
+  @Mapper(TransformComponent)
   private transformComponentMapper!: ComponentMapper<TransformComponent>;
 
+  @Mapper(ParticleComponent)
   private particleComponentMapper!: ComponentMapper<ParticleComponent>;
 
+  @Mapper(MassComponent)
   private massComponentMapper!: ComponentMapper<MassComponent>;
 
+  @Mapper(MoveComponent)
   private moveComponentMapper!: ComponentMapper<MoveComponent>;
 
   onInit(): void {
-    this.transformComponentMapper = this.getWorld().getComponentMapper<TransformComponent>(TransformComponent);
-    this.particleComponentMapper = this.getWorld().getComponentMapper<ParticleComponent>(ParticleComponent);
-    this.massComponentMapper = this.getWorld().getComponentMapper<MassComponent>(MassComponent);
-    this.moveComponentMapper = this.getWorld().getComponentMapper<MoveComponent>(MoveComponent);
-
     window.addEventListener('mousemove', (event) => {
       this.mouseX = event.offsetX;
       this.mouseY = event.offsetY;

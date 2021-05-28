@@ -1,24 +1,23 @@
-import { ComponentMapper, ComponentSetBuilder, EntitySystem } from '@cbartel_ci/tsecs';
+import { ComponentMapper, ComponentSetBuilder, EntitySystem, Mapper } from '@cbartel_ci/tsecs';
 import { TransformComponent } from './transform-component';
 import { MoveComponent } from './move-component';
 import { MassComponent } from './mass-component';
 
 export class GravitySystem extends EntitySystem {
+  @Mapper(TransformComponent)
   private transformComponentMapper!: ComponentMapper<TransformComponent>;
 
+  @Mapper(MoveComponent)
   private moveComponentMapper!: ComponentMapper<MoveComponent>;
 
+  @Mapper(MassComponent)
   private massComponentMapper!: ComponentMapper<MassComponent>;
 
   initComponentSet(componentSetBuilder: ComponentSetBuilder): ComponentSetBuilder {
     return componentSetBuilder.containingAll(TransformComponent, MoveComponent, MassComponent);
   }
 
-  onInit(): void {
-    this.transformComponentMapper = this.getWorld().getComponentMapper(TransformComponent);
-    this.moveComponentMapper = this.getWorld().getComponentMapper(MoveComponent);
-    this.massComponentMapper = this.getWorld().getComponentMapper(MassComponent);
-  }
+  onInit(): void {}
 
   onUpdate(dt: number): void {
     this.getEntities().forEach((entity) => {
