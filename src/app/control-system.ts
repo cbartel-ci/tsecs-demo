@@ -1,4 +1,4 @@
-import { ComponentMapper, Mapper, System } from '@cbartel_ci/tsecs';
+import { System } from '@cbartel_ci/tsecs';
 import { ParticleComponent } from './particle-component';
 import { TransformComponent } from './transform-component';
 import { MassComponent } from './mass-component';
@@ -11,18 +11,6 @@ export class ControlSystem extends System {
 
   private keyboardEvents: KeyboardEvent[] = [];
 
-  @Mapper(TransformComponent)
-  private transformComponentMapper!: ComponentMapper<TransformComponent>;
-
-  @Mapper(ParticleComponent)
-  private particleComponentMapper!: ComponentMapper<ParticleComponent>;
-
-  @Mapper(MassComponent)
-  private massComponentMapper!: ComponentMapper<MassComponent>;
-
-  @Mapper(MoveComponent)
-  private moveComponentMapper!: ComponentMapper<MoveComponent>;
-
   onInit(): void {
     window.addEventListener('mousemove', (event) => {
       this.mouseX = event.offsetX;
@@ -31,6 +19,16 @@ export class ControlSystem extends System {
 
     window.addEventListener('keydown', (event) => {
       this.keyboardEvents.push(event);
+    });
+
+    this.getWorld().registerBlueprint({
+      name: 'gravity-entity',
+      components: [
+        { type: TransformComponent },
+        { type: ParticleComponent },
+        { type: MassComponent },
+        { type: MoveComponent },
+      ],
     });
   }
 
@@ -56,11 +54,8 @@ export class ControlSystem extends System {
     while (this.keyboardEvents.length > 0) {
       const event = this.keyboardEvents.pop()!;
       if (event.key === 'Enter') {
-        const entity = this.getWorld().createEntity();
-        const particleComponent = new ParticleComponent();
-        const transformComponent = new TransformComponent();
-        const massComponent = new MassComponent();
-        const moveComponent = new MoveComponent();
+        const entity = this.getWorld().createEntity('gravity-entity');
+        const transformComponent = entity.getComponent<TransformComponent>(TransformComponent);
         transformComponent.x = this.mouseX;
         transformComponent.y = this.mouseY;
         const min = 75;
@@ -71,12 +66,9 @@ export class ControlSystem extends System {
         if (m <= 0.1) {
           m = 0.1;
         }
+        const massComponent = entity.getComponent<MassComponent>(MassComponent);
         massComponent.m = m;
-        this.particleComponentMapper.addComponent(entity, particleComponent);
-        this.transformComponentMapper.addComponent(entity, transformComponent);
-        this.massComponentMapper.addComponent(entity, massComponent);
-        this.moveComponentMapper.addComponent(entity, moveComponent);
-        console.log(`Entity ${entity} created.`);
+        console.log(`Entity ${entity.getEntityId()} created.`);
       }
     }
   }

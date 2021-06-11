@@ -1,18 +1,9 @@
-import { ComponentMapper, ComponentSetBuilder, EntitySystem, Mapper } from '@cbartel_ci/tsecs';
+import { ComponentSetBuilder, EntitySystem } from '@cbartel_ci/tsecs';
 import { TransformComponent } from './transform-component';
 import { MassComponent } from './mass-component';
 import { MoveComponent } from './move-component';
 
 export class CollisionSystem extends EntitySystem {
-  @Mapper(TransformComponent)
-  private transformComponentMapper!: ComponentMapper<TransformComponent>;
-
-  @Mapper(MoveComponent)
-  private moveComponentMapper!: ComponentMapper<MoveComponent>;
-
-  @Mapper(MassComponent)
-  private massComponentMapper!: ComponentMapper<MassComponent>;
-
   initComponentSet(componentSetBuilder: ComponentSetBuilder): ComponentSetBuilder {
     return componentSetBuilder.containingAll(TransformComponent, MassComponent, MoveComponent);
   }
@@ -22,26 +13,26 @@ export class CollisionSystem extends EntitySystem {
   onUpdate(): void {
     const deleted: number[] = [];
     this.getEntities().forEach((entity) => {
-      if (deleted.filter((id) => entity === id).length > 0) {
+      if (deleted.filter((id) => entity.getEntityId() === id).length > 0) {
         return;
       }
-      const transformComponent = this.transformComponentMapper.getComponent(entity);
+      const transformComponent = entity.getComponent<TransformComponent>(TransformComponent);
       this.getEntities().forEach((other) => {
         if (entity === other) {
           return;
         }
-        if (deleted.filter((id) => other === id).length > 0) {
+        if (deleted.filter((id) => other.getEntityId() === id).length > 0) {
           return;
         }
-        const otherTransformComponent = this.transformComponentMapper.getComponent(other);
+        const otherTransformComponent = other.getComponent<TransformComponent>(TransformComponent);
         const dx = otherTransformComponent.x - transformComponent.x;
         const dy = otherTransformComponent.y - transformComponent.y;
         const r = Math.sqrt(dx * dx + dy * dy);
         if (r < 5) {
-          const moveComponent = this.moveComponentMapper.getComponent(entity);
-          const massComponent = this.massComponentMapper.getComponent(entity);
-          const otherMoveComponent = this.moveComponentMapper.getComponent(other);
-          const otherMassComponent = this.massComponentMapper.getComponent(other);
+          const moveComponent = entity.getComponent<MoveComponent>(MoveComponent);
+          const massComponent = entity.getComponent<MassComponent>(MassComponent);
+          const otherMoveComponent = other.getComponent<MoveComponent>(MoveComponent);
+          const otherMassComponent = other.getComponent<MassComponent>(MassComponent);
           moveComponent.v.x =
             (otherMoveComponent.v.x * otherMassComponent.m + moveComponent.v.x * massComponent.m) /
             (otherMassComponent.m + massComponent.m);
@@ -49,9 +40,11 @@ export class CollisionSystem extends EntitySystem {
             (otherMoveComponent.v.y * otherMassComponent.m + moveComponent.v.y * massComponent.m) /
             (otherMassComponent.m + massComponent.m);
           massComponent.m += otherMassComponent.m;
-          deleted.push(other);
-          console.log(`collision between ${entity} and ${other}, deleting entity #${other}`);
-          this.getWorld().deleteEntity(other);
+          deleted.push(other.getEntityId());
+          console.log(
+            `collision between ${entity.getEntityId()} and ${other.getEntityId()}, deleting entity #${other.getEntityId()}`
+          );
+          this.getWorld().deleteEntityById(other.getEntityId());
         }
       });
     });

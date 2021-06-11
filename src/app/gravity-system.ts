@@ -1,18 +1,9 @@
-import { ComponentMapper, ComponentSetBuilder, EntitySystem, Mapper } from '@cbartel_ci/tsecs';
+import { ComponentSetBuilder, EntitySystem } from '@cbartel_ci/tsecs';
 import { TransformComponent } from './transform-component';
 import { MoveComponent } from './move-component';
 import { MassComponent } from './mass-component';
 
 export class GravitySystem extends EntitySystem {
-  @Mapper(TransformComponent)
-  private transformComponentMapper!: ComponentMapper<TransformComponent>;
-
-  @Mapper(MoveComponent)
-  private moveComponentMapper!: ComponentMapper<MoveComponent>;
-
-  @Mapper(MassComponent)
-  private massComponentMapper!: ComponentMapper<MassComponent>;
-
   initComponentSet(componentSetBuilder: ComponentSetBuilder): ComponentSetBuilder {
     return componentSetBuilder.containingAll(TransformComponent, MoveComponent, MassComponent);
   }
@@ -21,14 +12,14 @@ export class GravitySystem extends EntitySystem {
 
   onUpdate(dt: number): void {
     this.getEntities().forEach((entity) => {
-      const transformComponent = this.transformComponentMapper.getComponent(entity);
-      const moveComponent = this.moveComponentMapper.getComponent(entity);
+      const transformComponent = entity.getComponent<TransformComponent>(TransformComponent);
+      const moveComponent = entity.getComponent<MoveComponent>(MoveComponent);
       this.getEntities().forEach((other) => {
         if (entity === other) {
           return;
         }
-        const otherTransformComponent = this.transformComponentMapper.getComponent(other);
-        const otherMassComponent = this.massComponentMapper.getComponent(other);
+        const otherTransformComponent = other.getComponent<TransformComponent>(TransformComponent);
+        const otherMassComponent = other.getComponent<MassComponent>(MassComponent);
 
         const dx = otherTransformComponent.x - transformComponent.x;
         const dy = otherTransformComponent.y - transformComponent.y;

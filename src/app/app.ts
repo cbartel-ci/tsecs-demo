@@ -16,10 +16,7 @@ export class App {
       width: window.innerWidth,
       height: window.innerHeight,
       antialias: true,
-    });
-
-    window.addEventListener('resize', () => {
-      this.app.renderer.resize(window.innerWidth, window.innerHeight);
+      resizeTo: window,
     });
 
     document.body.appendChild(this.app.view);

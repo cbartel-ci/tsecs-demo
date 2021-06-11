@@ -1,4 +1,4 @@
-import { ComponentMapper, ComponentSetBuilder, EntitySystem, Mapper } from '@cbartel_ci/tsecs';
+import { ComponentSetBuilder, Entity, EntitySystem } from '@cbartel_ci/tsecs';
 import { Container } from 'pixi.js';
 // @ts-ignore
 import Gradient from 'javascript-color-gradient';
@@ -7,15 +7,6 @@ import { ParticleComponent } from './particle-component';
 import { MassComponent } from './mass-component';
 
 export class ParticleSystem extends EntitySystem {
-  @Mapper(ParticleComponent)
-  private particleComponentMapper!: ComponentMapper<ParticleComponent>;
-
-  @Mapper(TransformComponent)
-  private transformComponentmapper!: ComponentMapper<TransformComponent>;
-
-  @Mapper(MassComponent)
-  private massComponentMapper!: ComponentMapper<MassComponent>;
-
   private gradient!: Gradient;
 
   constructor(private readonly stage: Container) {
@@ -38,9 +29,9 @@ export class ParticleSystem extends EntitySystem {
 
   onUpdate(dt: number): void {
     this.getEntities().forEach((entity) => {
-      const particleComponent = this.particleComponentMapper.getComponent(entity);
-      const transformComponent = this.transformComponentmapper.getComponent(entity);
-      const massComponent = this.massComponentMapper.getComponent(entity);
+      const particleComponent = entity.getComponent<ParticleComponent>(ParticleComponent);
+      const transformComponent = entity.getComponent<TransformComponent>(TransformComponent);
+      const massComponent = entity.getComponent<MassComponent>(MassComponent);
       const mass = massComponent ? Math.floor(massComponent.m) + 1 : 1;
       const { graphics } = particleComponent;
 
@@ -53,15 +44,15 @@ export class ParticleSystem extends EntitySystem {
     });
   }
 
-  onEntityAdd(entity: number) {
-    this.stage.addChild(this.particleComponentMapper.getComponent(entity).graphics);
-    console.log(`particle system: added entity ${entity} to stage.`);
+  onEntityAdd(entity: Entity) {
+    this.stage.addChild(entity.getComponent<ParticleComponent>(ParticleComponent).graphics);
+    console.log(`particle system: added entity ${entity.getEntityId()} to stage.`);
   }
 
-  onEntityRemove(entity: number) {
-    const { graphics } = this.particleComponentMapper.getComponent(entity);
+  onEntityRemove(entity: Entity) {
+    const { graphics } = entity.getComponent<ParticleComponent>(ParticleComponent);
     graphics.clear();
     this.stage.removeChild(graphics);
-    console.log(`particle system: removed entity ${entity} from stage.`);
+    console.log(`particle system: removed entity ${entity.getEntityId()} from stage.`);
   }
 }
